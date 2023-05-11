@@ -1,10 +1,5 @@
 <?xml version="1.0"?>
 <robot name="differential_drive_robot">
-
-  <material name="Caster">
-    <texture filename="/mnt/sde/src/rl/sumo/sumogym/sumogym/robot_descriptions/simple_robot/meow.png" />
-  </material>
-
   <link name="base_link">
     <visual>
     <origin xyz="0 0 0" rpy="1.57 0 0" />

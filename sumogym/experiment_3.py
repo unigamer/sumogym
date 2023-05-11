@@ -8,7 +8,7 @@ from simple_pid import PID
 from typing import List
 
 from PIL import Image
-import utils
+from . import utils
 
 p = bc.BulletClient(connection_mode=pybullet.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
