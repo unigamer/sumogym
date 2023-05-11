@@ -18,13 +18,14 @@ class Robot():
     def __init__(self,
                  p: bc.BulletClient,
                  timestep: float = 240,
-                 wheel_torque_limit: float = 2.0) -> None:
+                 wheel_torque_limit: float = 2.0,
+                 basePosition: np.ndarray = [0, 0, 0.3]) -> None:
 
         self.p = p  # The pybullet simulation we're connected to
         self.timestep = timestep
         self.wheel_torque_limit = wheel_torque_limit
 
-        self.robot = p.loadURDF(str(robot_path), basePosition=[0, 0, 0.3])
+        self.robot = p.loadURDF(str(robot_path), basePosition=basePosition)
 
         # Prepare joints
         self.joint_dictionary = {}  # Key: joint name, Value: joint index
