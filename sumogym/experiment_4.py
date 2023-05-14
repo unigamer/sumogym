@@ -14,6 +14,7 @@ from . import vehicle
 p = bc.BulletClient(connection_mode=pybullet.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 plane = p.loadURDF("plane.urdf")
+# dojo = 
 p.setGravity(0, 0, -9.8)
 
 # Simulation Parameters

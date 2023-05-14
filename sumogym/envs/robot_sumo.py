@@ -44,17 +44,19 @@ class RobotSumoEnv(gym.Env):
         self.p = bc.BulletClient(connection_mode=connection_mode)
         self.p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.plane = self.p.loadURDF("plane.urdf")
+        self.dojo = self.p.loadURDF(str(vehicle.urdf_folder_path/"dojo.urdf"),useFixedBase=True,basePosition = [0,0,0.25])
+        # x = self.p.loadTexture(str(vehicle.urdf_folder_path / "meow.png"))
+        # self.p.changeVisualShape(objectUniqueId=self.dojo,
+        #                     linkIndex=-1, textureUniqueId=x)
         self.p.setGravity(0, 0, -9.8)
         self.p.configureDebugVisualizer(self.p.COV_ENABLE_GUI, 0)  # Remove the GUI
 
         # Load robot and setup pybullet simulation
         wheel_torque_limit = 2
-        self.robotA = vehicle.Robot(p=self.p, 
-                                    wheel_torque_limit=wheel_torque_limit, 
-                                    basePosition=[-0.5,0,0.3])
+        self.robotA = vehicle.Robot(p=self.p,
+                                    wheel_torque_limit=wheel_torque_limit)
         self.robotB = vehicle.Robot(p=self.p,
-                                    wheel_torque_limit=wheel_torque_limit,
-                                    basePosition=[0.5,0,0.3])
+                                    wheel_torque_limit=wheel_torque_limit)
         self.robots = [self.robotA, self.robotB]
 
     def _get_obs(self):
@@ -68,15 +70,17 @@ class RobotSumoEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)  # We need the following line to seed self.np_random
 
-        # Choose the agent's location uniformly at random
-        # self._agent_location = self.np_random.integers(0, self.size, size=2, dtype=int)
+        polarAngle = np.random.uniform(low=np.deg2rad(0), high=np.deg2rad(360), size=(1))[0]
+        yawAngleOffset = np.random.uniform(low=np.deg2rad(0), high=np.deg2rad(90), size=(1))[0]
+        radius = np.random.uniform(low=1, high=1.5, size=(1))[0]
+        for ii, robot in enumerate(self.robots):
+            polarAngleRobot = polarAngle+ ii*np.deg2rad(180)
+            x = radius*np.sin(polarAngleRobot)
+            y = radius*np.cos(polarAngleRobot)
+            quaternion = self.p.getQuaternionFromEuler([0, 0, np.deg2rad(270)-polarAngleRobot+yawAngleOffset])
+            position = [x, y, 0.8]
+            self.p.resetBasePositionAndOrientation(robot(), position, quaternion)
 
-        # We will sample the target's location randomly until it does not coincide with the agent's location
-        # self._target_location = self._agent_location
-        # while np.array_equal(self._target_location, self._agent_location):
-        #     self._target_location = self.np_random.integers(
-        #         0, self.size, size=2, dtype=int
-        #     )
 
         observation = self._get_obs()
         info = self._get_info()
@@ -93,6 +97,7 @@ class RobotSumoEnv(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
         self.robotA.setState(action["robotA"])
+        self.robotB.setState(action["robotB"])
         self.p.stepSimulation()
 
         # if self.render_mode == "human":

@@ -36,10 +36,11 @@ class Joystick():
                         self.right_axis_y = -value/32768.0
 
             # print([self.left_axis, self.right_axis])
+            # print(self.right_axis_x, self.right_axis_y)
 
 
 if __name__ == "__main__":
     joy = Joystick()
     while True:
-        print("test")
+        # print("test")
         time.sleep(0.001)
