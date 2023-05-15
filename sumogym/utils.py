@@ -1,5 +1,5 @@
 
-def get_joint_info_dict(p,bodyUniqueId, jointIndex, physicsClientId=0):
+def get_joint_info_dict(p, bodyUniqueId, jointIndex, physicsClientId=0):
     joint_info = p.getJointInfo(
         bodyUniqueId, jointIndex, physicsClientId=physicsClientId)
     joint_dict = {
@@ -22,3 +22,28 @@ def get_joint_info_dict(p,bodyUniqueId, jointIndex, physicsClientId=0):
         "parentIndex": joint_info[16]
     }
     return joint_dict
+
+
+def get_robot_observation(robot_name, observation):
+    assert robot_name in ["robotA", "robotB"]
+
+    if robot_name == "robotA":
+        opponent_name = "robotB"
+    else:
+        opponent_name = "robotA"
+
+    result = {}
+
+    for key, value in observation.items():
+        if robot_name in key:
+            new_key = key.replace(f"{robot_name}", "my")
+            result[new_key] = value
+
+    for key, value in observation.items():
+        if opponent_name in key:
+            new_key = key.replace(f"{opponent_name}", "opponent")
+            result[new_key] = value
+
+    result["robots_colliding"] = observation["robots_colliding"]
+
+    return result
