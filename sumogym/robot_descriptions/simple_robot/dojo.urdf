@@ -9,14 +9,14 @@
       <geometry>
         <mesh filename="dojo.stl"/>
       </geometry>
-             <material name="white">
-        <color rgba="1 1 1 1"/>
+             <material name="some_color">
+        <color rgba="0.1 0.2 0.8 1"/>
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <cylinder length="0.5" radius="2.5" />
+        <mesh filename="dojo.stl"/>
       </geometry>
     </collision>
     <inertial>

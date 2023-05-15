@@ -28,7 +28,7 @@ action = {"robotA": np.array([0, 0]), "robotB": np.array([0, 0])}
 
 # Constants for mapping joystick values to wheel speeds
 MAX_JOYSTICK_VALUE = 1
-MAX_WHEEL_SPEED = 40
+MAX_WHEEL_SPEED = 10
 
 
 # Prepare PID controllers
@@ -70,7 +70,7 @@ while not terminated:
     robotA_observation = utils.get_robot_observation("robotA", observation)
     robotB_observation = utils.get_robot_observation("robotB", observation)
 
-    pprint.pprint(robotA_observation)
-    pprint.pprint(robotB_observation)
+    # pprint.pprint(robotA_observation)
+    # pprint.pprint(robotB_observation)
 
     time.sleep(env.timestep)

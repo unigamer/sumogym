@@ -105,7 +105,7 @@ class RobotSumoEnv(gym.Env):
 
         polarAngle = np.random.uniform(low=np.deg2rad(0), high=np.deg2rad(360), size=(1))[0]
         yawAngleOffset = np.random.uniform(low=np.deg2rad(0), high=np.deg2rad(90), size=(1))[0]
-        radius = np.random.uniform(low=1, high=1.5, size=(1))[0]
+        radius = np.random.uniform(low=0.5, high=1.3, size=(1))[0]
         for ii, robot in enumerate(self.robots):
             polarAngleRobot = polarAngle + ii*np.deg2rad(180)
             x = radius*np.sin(polarAngleRobot)

@@ -1,16 +1,21 @@
 <?xml version="1.0"?>
 <robot name="differential_drive_robot">
   <link name="base_link">
+      <contact>
+      <rolling_friction value="0.000" />
+      <lateral_friction value="0.0" />
+      <spinning_friction value="0.00" />
+    </contact>
     <visual>
-    <origin xyz="0 0 0" rpy="1.57 0 0" />
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
       <geometry>
-        <mesh filename="body.stl"/>
+        <mesh filename="body.stl" />
       </geometry>
     </visual>
     <collision>
-     <origin xyz="0 0 0" rpy="1.57 0 0" />
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
       <geometry>
-        <mesh filename="body.stl"/>
+        <mesh filename="body.stl" />
       </geometry>
     </collision>
     <inertial>
@@ -21,6 +26,11 @@
   </link>
 
   <link name="left_wheel">
+    <!-- <contact>
+      <rolling_friction value="0.001" />
+      <lateral_friction value="0.5" />
+      <spinning_friction value="0.005" />
+    </contact> -->
     <visual>
       <origin xyz="0 0 0" rpy=" 1.57 0 0" />
       <geometry>
@@ -41,6 +51,10 @@
   </link>
 
   <link name="right_wheel">
+    <contact>
+      <rolling_friction value="0.001" />
+      <lateral_friction value="0.5" />
+    </contact>
     <visual>
       <origin xyz="0 0 0" rpy=" 1.57 0 0" />
       <geometry>
