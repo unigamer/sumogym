@@ -42,13 +42,13 @@ class RobotSumoParallelEnv(ParallelEnv):
         self.p.configureDebugVisualizer(self.p.COV_ENABLE_GUI, 0)  # Remove the GUI
 
         # Load robot and setup pybullet simulation
-        wheel_torque_limit = 2
+        self.wheel_torque_limit = 2
         self.robotA = vehicle.Robot(p=self.p,
-                                    wheel_torque_limit=wheel_torque_limit,
-                                    color=[1,0,0,1])
+                                    wheel_torque_limit=self.wheel_torque_limit,
+                                    color=[1, 0, 0, 1])
         self.robotB = vehicle.Robot(p=self.p,
-                                    wheel_torque_limit=wheel_torque_limit,
-                                    color=[0,1,0,1])
+                                    wheel_torque_limit=self.wheel_torque_limit,
+                                    color=[0, 1, 0, 1])
         self.robots = [self.robotA, self.robotB]
 
         self._seed()
@@ -78,6 +78,8 @@ class RobotSumoParallelEnv(ParallelEnv):
 
     @functools.lru_cache(maxsize=None)
     def action_space(self, agent):
+        # torque = wheel_effort * self.wheel_torque_limit
+        # [left_wheel_effort, right_wheel_effort]
         return spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float64)
 
     def render(self):
@@ -86,36 +88,39 @@ class RobotSumoParallelEnv(ParallelEnv):
     def close(self):
         pass
 
-    def _get_obs(self, agent):
-
+    def _get_robot_order(self,agent):
         assert agent in self.possible_agents
         if agent == "robotA":
             robot_order = [self.robotA, self.robotB]
         else:
             robot_order = [self.robotB, self.robotA]
 
+        return robot_order
+
+    def _get_obs(self, agent):
+
+        robot_order = self._get_robot_order(agent)
+
         robots_colliding = bool(self.p.getContactPoints(self.robotA(), self.robotB()))
         observation_dict = {}
+        # The first robot is self, the second opponent
         for robot, robot_name in zip(robot_order, ["self", "opponent"]):
             bodyID = robot()
             linear_position, angular_position = self.p.getBasePositionAndOrientation(bodyID)
             linear_velocity, angular_velocity = self.p.getBaseVelocity(bodyID)
+            wheel_velocities = robot.getState()["wheel_velocities"]
             observation_dict[f"{robot_name}_linear_position"] = np.array(linear_position)
             observation_dict[f"{robot_name}_angular_position"] = np.array(angular_position)
             observation_dict[f"{robot_name}_linear_velocity"] = np.array(linear_velocity)
             observation_dict[f"{robot_name}_angular_velocity"] = np.array(angular_velocity)
-            observation_dict[f"{robot_name}_wheel_velocities"] = robot.getState()[
-                "wheel_velocities"]
+            observation_dict[f"{robot_name}_wheel_velocities"] = wheel_velocities
         observation_dict["robots_colliding"] = np.array([robots_colliding], dtype=np.int8)
         # pprint.pprint(observation_dict)
         return observation_dict
 
     def _get_info(self, agent):
-        assert agent in self.possible_agents
-        if agent == "robotA":
-            robot_order = [self.robotA, self.robotB]
-        else:
-            robot_order = [self.robotB, self.robotA]
+        robot_order = self._get_robot_order(agent)
+        
         floor_collisions = [None]*0
         for robot in robot_order:
             bodyID = robot()
