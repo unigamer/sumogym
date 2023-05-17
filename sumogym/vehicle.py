@@ -19,18 +19,19 @@ class Robot():
                  p: bc.BulletClient,
                  timestep: float = 240,
                  wheel_torque_limit: float = 2.0,
-                 basePosition: np.ndarray = [0, 0, 0.3]) -> None:
+                 basePosition: np.ndarray = [0, 0, 0.3],
+                 color: np.ndarray = [1,1,1,1]) -> None:
 
         self.p = p  # The pybullet simulation we're connected to
         self.timestep = timestep
         self.wheel_torque_limit = wheel_torque_limit
 
-        self.robot = p.loadURDF(str(robot_path), basePosition=basePosition)
+        self.robot = self.p.loadURDF(str(robot_path), basePosition=basePosition)
 
         # Prepare joints
         self.joint_dictionary = {}  # Key: joint name, Value: joint index
-        for ii in range(p.getNumJoints(self.robot)):
-            jointInfo = p.getJointInfo(self.robot, ii)
+        for ii in range(self.p.getNumJoints(self.robot)):
+            jointInfo = self.p.getJointInfo(self.robot, ii)
             self.joint_dictionary[jointInfo[1].decode("utf-8")] = jointInfo[0]
             print(utils.get_joint_info_dict(p, self.robot, ii))
         print(self.joint_dictionary)
@@ -38,11 +39,12 @@ class Robot():
             p.setJointMotorControl2(
                 self.robot, self.joint_dictionary[joint], p.VELOCITY_CONTROL, force=0)
 
-        x = p.loadTexture(str(urdf_folder_path / "meow.png"))
+        x = self.p.loadTexture(str(urdf_folder_path / "meow.png"))
         p.changeVisualShape(objectUniqueId=self.robot,
                             linkIndex=0, textureUniqueId=x)
         p.changeVisualShape(objectUniqueId=self.robot,
                             linkIndex=1, textureUniqueId=x)
+        self.p.changeVisualShape(objectUniqueId=self.robot, linkIndex=-1, rgbaColor=color)
 
     def getState(self) -> dict:
         state = {}

@@ -1,21 +1,15 @@
 import functools
 
 import numpy as np
-import gymnasium
+
 from gymnasium import spaces
-
+from gymnasium.utils import seeding
 from pettingzoo import ParallelEnv
-from pettingzoo.utils import parallel_to_aec, wrappers
-
-from .. import vehicle
 import pybullet_data
 import pybullet
 import pybullet_utils.bullet_client as bc
-import time
-import copy
-import pprint
 
-from gymnasium.utils import seeding
+from .. import vehicle
 
 
 class RobotSumoParallelEnv(ParallelEnv):
@@ -50,9 +44,11 @@ class RobotSumoParallelEnv(ParallelEnv):
         # Load robot and setup pybullet simulation
         wheel_torque_limit = 2
         self.robotA = vehicle.Robot(p=self.p,
-                                    wheel_torque_limit=wheel_torque_limit)
+                                    wheel_torque_limit=wheel_torque_limit,
+                                    color=[1,0,0,1])
         self.robotB = vehicle.Robot(p=self.p,
-                                    wheel_torque_limit=wheel_torque_limit)
+                                    wheel_torque_limit=wheel_torque_limit,
+                                    color=[0,1,0,1])
         self.robots = [self.robotA, self.robotB]
 
         self._seed()
@@ -75,7 +71,7 @@ class RobotSumoParallelEnv(ParallelEnv):
                 "opponent_linear_velocity": spaces.Box(low=-10, high=10.0, shape=(3,), dtype=np.float64),
                 "opponent_wheel_velocities": spaces.Box(low=-30.0, high=30.0, shape=(2,), dtype=np.float64),
 
-                
+
             })
 
         return observation_space
@@ -97,7 +93,6 @@ class RobotSumoParallelEnv(ParallelEnv):
             robot_order = [self.robotA, self.robotB]
         else:
             robot_order = [self.robotB, self.robotA]
-
 
         robots_colliding = bool(self.p.getContactPoints(self.robotA(), self.robotB()))
         observation_dict = {}
@@ -131,11 +126,10 @@ class RobotSumoParallelEnv(ParallelEnv):
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
 
-
     def reset(self, seed=None, options=None):
         if seed is not None:
             self._seed(seed)
-       
+
         self.agents = self.possible_agents[:]
 
         polarAngle = self.np_random.uniform(low=np.deg2rad(0), high=np.deg2rad(360), size=(1))[0]
@@ -154,7 +148,6 @@ class RobotSumoParallelEnv(ParallelEnv):
         infos = {agent: self._get_info(agent) for agent in self.agents}
 
         return observations, infos
-    
 
     def step(self, actions):
 
@@ -177,14 +170,13 @@ class RobotSumoParallelEnv(ParallelEnv):
 
         for agent in self.agents:
             reward = time_penalty - int(infos[agent]["self_floor_collision"])*floor_reward_penalty \
-                        + int(infos[agent]["opponent_floor_collision"])*floor_reward_penalty \
-                        + observations[agent]["robots_colliding"]*contact_award
-            rewards[agent] =reward
+                + int(infos[agent]["opponent_floor_collision"])*floor_reward_penalty \
+                + observations[agent]["robots_colliding"]*contact_award
+            rewards[agent] = reward
 
-        terminations = {"robotA": infos["robotA"]["self_floor_collision"], 
+        terminations = {"robotA": infos["robotA"]["self_floor_collision"],
                         "robotB": infos["robotB"]["self_floor_collision"]}
 
         truncations = {"robotA": False, "robotB": False}
 
-        
         return observations, rewards, terminations, truncations, infos

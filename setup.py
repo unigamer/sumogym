@@ -4,6 +4,6 @@ setup(
     name="sumogym",
     version="0.0.1",
     install_requires=["gymnasium", "pybullet", "numpy", "simple-pid",
-                      "inputs", "pettingzoo"],
+                      "inputs", "pettingzoo", "supersuit"],
     packages=find_packages(include=['sumogym'])
 )
