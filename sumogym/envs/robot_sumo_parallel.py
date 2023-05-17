@@ -13,7 +13,7 @@ from .. import vehicle
 
 
 class RobotSumoParallelEnv(ParallelEnv):
-    metadata = {"render_modes": ["human"], "name": "robotsumo_v0"}
+    metadata = {"render_modes": ["human", "rgb_array"], "name": "robotsumo_v0"}
 
     def __init__(self, render_mode=None):
 
@@ -53,6 +53,32 @@ class RobotSumoParallelEnv(ParallelEnv):
 
         self._seed()
 
+        if self.render_mode == "rgb_array":
+            self._setup_render()
+
+
+    def _setup_render(self):
+        camTargetPos = [0, 0, 0]
+        cam_dist = 5.20
+        cam_pitch = -60
+        cam_yaw = 1.2
+        self.render_width = 400
+        self.render_height = 400
+        self.view_matrix = self.p.computeViewMatrixFromYawPitchRoll(
+            cameraTargetPosition=camTargetPos,
+            distance=cam_dist,
+            yaw=cam_yaw,
+            pitch=cam_pitch,
+            roll=0,
+            upAxisIndex=2)
+
+        self.proj_matrix = self.p.computeProjectionMatrixFOV(
+            fov=60,
+            aspect=float(self.render_width)/self.render_height,
+            nearVal=0.1,
+            farVal=100.0)
+        
+
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
         observation_space = spaces.Dict(
@@ -83,7 +109,17 @@ class RobotSumoParallelEnv(ParallelEnv):
         return spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float64)
 
     def render(self):
-        pass
+        assert self.render_mode == "rgb_array"
+        (_, _, px, _, _) = self.p.getCameraImage(
+            width=self.render_width,
+            height=self.render_height,
+            viewMatrix=self.view_matrix,
+            projectionMatrix=self.proj_matrix,
+            renderer=pybullet.ER_BULLET_HARDWARE_OPENGL)
+        rgb_array = np.array(px).reshape((self.render_height, self.render_width, 4))
+        rgb_array = rgb_array[:, :, :3].astype(np.uint8)
+
+        return rgb_array
 
     def close(self):
         pass
