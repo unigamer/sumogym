@@ -63,6 +63,7 @@ while not terminated:
     observation, reward, terminated, truncatation, info = env.step(action)
 
     pprint.pprint(reward)
+    pprint.pprint(type(reward))
 
 
 

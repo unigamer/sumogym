@@ -107,7 +107,7 @@ class RobotSumoParallelEnv(ParallelEnv):
     def action_space(self, agent):
         # torque = wheel_effort * self.wheel_torque_limit
         # [left_wheel_effort, right_wheel_effort]
-        return spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float64)
+        return spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32)
 
     def render(self):
         assert self.render_mode == "rgb_array"
@@ -222,7 +222,7 @@ class RobotSumoParallelEnv(ParallelEnv):
             reward = time_penalty - int(infos[agent]["self_floor_collision"])*floor_reward_penalty \
                 + int(infos[agent]["opponent_floor_collision"])*floor_reward_penalty \
                 + observations[agent]["robots_colliding"]*contact_award
-            rewards[agent] = reward
+            rewards[agent] = float(reward)
 
         terminations = {"robotA": infos["robotA"]["self_floor_collision"],
                         "robotB": infos["robotB"]["self_floor_collision"]}
