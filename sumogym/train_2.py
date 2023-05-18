@@ -10,7 +10,7 @@ env = RobotSumoParallelEnv()
 # env = ss.pad_observations_v0(env)
 # env = ss.black_death_v3(env)
 env = ss.pettingzoo_env_to_vec_env_v1(env)
-env = ss.concat_vec_envs_v1(env, 4, num_cpus=4, base_class='stable_baselines3')
+# env = ss.concat_vec_envs_v1(env, 2, num_cpus=1, base_class='stable_baselines3')
 
 model = PPO('MultiInputPolicy', env, verbose=2, gamma=0.999, n_steps=1000, ent_coef=0.01, learning_rate=0.00025, vf_coef=0.5, max_grad_norm=0.5, gae_lambda=0.95, n_epochs=4, clip_range=0.2, clip_range_vf=1, tensorboard_log="./ppo_test/")
 model.learn(total_timesteps=1000000, tb_log_name="test",  reset_num_timesteps=True)

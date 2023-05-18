@@ -15,8 +15,9 @@ from .. import vehicle
 class RobotSumoParallelEnv(ParallelEnv):
     metadata = {"render_modes": ["human", "rgb_array"], "name": "robotsumo_v0"}
 
-    def __init__(self, render_mode=None):
-
+    def __init__(self, render_mode=None, max_time=-1):
+        self.max_time = max_time
+        
         self.possible_agents = ["robotA", "robotB"]
         self.agent_name_mapping = dict(
             zip(self.possible_agents, list(range(len(self.possible_agents))))
@@ -132,6 +133,13 @@ class RobotSumoParallelEnv(ParallelEnv):
             robot_order = [self.robotB, self.robotA]
 
         return robot_order
+    
+    def _get_all_obs(self):
+        return {agent: self._get_obs(agent) for agent in self.agents}
+    
+    def _get_all_infos(self):
+        return {agent: self._get_info(agent) for agent in self.agents}
+
 
     def _get_obs(self, agent):
 
@@ -171,6 +179,7 @@ class RobotSumoParallelEnv(ParallelEnv):
         if seed is not None:
             self._seed(seed)
 
+        self.current_time = 0
         self.agents = self.possible_agents[:]
 
         polarAngle = self.np_random.uniform(low=np.deg2rad(0), high=np.deg2rad(360), size=(1))[0]
@@ -185,8 +194,8 @@ class RobotSumoParallelEnv(ParallelEnv):
             position = [x, y, 0.8]
             self.p.resetBasePositionAndOrientation(robot(), position, quaternion)
 
-        observations = {agent: self._get_obs(agent) for agent in self.agents}
-        infos = {agent: self._get_info(agent) for agent in self.agents}
+        observations = self._get_all_obs()
+        infos = self._get_all_infos()
 
         return observations, infos
 
@@ -204,9 +213,9 @@ class RobotSumoParallelEnv(ParallelEnv):
         observations = {agent: self._get_obs(agent) for agent in self.agents}
         infos = {agent: self._get_info(agent) for agent in self.agents}
 
-        time_penalty = -0.01
+        time_penalty = 0
         floor_reward_penalty = 50
-        contact_award = 0.1
+        contact_award = 0.5
         rewards = {}
 
         for agent in self.agents:
@@ -219,5 +228,12 @@ class RobotSumoParallelEnv(ParallelEnv):
                         "robotB": infos["robotB"]["self_floor_collision"]}
 
         truncations = {"robotA": False, "robotB": False}
+
+        self.current_time += self.timestep
+
+        if self.max_time > 0: # If there is a time limit
+            if self.current_time >= self.max_time:
+                 truncations = {"robotA": True, "robotB": True}
+                 terminations = {"robotA": True, "robotB": True}
 
         return observations, rewards, terminations, truncations, infos

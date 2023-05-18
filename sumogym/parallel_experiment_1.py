@@ -14,9 +14,10 @@ from simple_pid import PID
 from . import joystick
 from . import utils
 
-from pettingzoo.test import parallel_seed_test, parallel_api_test, render_test
+from pettingzoo.test import parallel_seed_test, parallel_api_test, render_test, max_cycles_test
 parallel_seed_test(RobotSumoParallelEnv)
 parallel_api_test(RobotSumoParallelEnv())
+# max_cycles_test(RobotSumoParallelEnv())
 # meow = RobotSumoParallelEnv
 # render_test(RobotSumoParallelEnv)
 # del meow
